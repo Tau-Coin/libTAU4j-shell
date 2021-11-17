@@ -9,7 +9,7 @@ import org.libTAU4j.Pair;
 import org.libTAU4j.SessionManager;
 import org.libTAU4j.SessionParams;
 import org.libTAU4j.Sha1Hash;
-import org.libTAU4j.TcpEndpoint;
+import org.libTAU4j.Transaction;
 import org.libTAU4j.Vectors;
 import org.libTAU4j.alerts.*;
 
@@ -19,7 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Scanner;
 
 import io.tau.type.Message;
@@ -145,6 +147,18 @@ public final class DhtShell {
             chainID = create_chain_id(s, communityName);
         	log("Getting Chain ID info: " + Utils.toHex(chainID));
             create_new_community(s, chainID, accounts);
+			Set<String> peers = new HashSet<String>();	
+		    peers.add(friend);
+			follow_chain(s, chainID, peers);
+			//unfollow_chain(s, chainID);
+			Transaction tx = new Transaction(chainID, 0, 1637114512, 
+							 friendPubkeyArray, friendPubkeyArray, 100, 100, 10,
+            				 Utils.fromHex("a123df3a123e221a"));
+			submit_transaction(s, tx);
+			
+			Account act = get_account_info(s, chainID, friend);
+        	log("Account balance: " + act.getBalance());
+        	log("Account nonce: " + act.getNonce());
         }
     }
 
@@ -259,11 +273,55 @@ public final class DhtShell {
     private static void create_new_community(SessionManager s, byte[] id, Map<String, Account> accounts) {
         log("Start Create New Community");
         s.createNewCommunity(id, accounts);
+        log("End Create New Community");
+        try {
+            Thread.sleep(5 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void follow_chain(SessionManager s, byte[] id, Set<String> peers) {
+        log("Start Follow Chain");
+        s.followChain(id, peers);
+        log("End Follow Chain");
+        try {
+            Thread.sleep(5 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void unfollow_chain(SessionManager s, byte[] id) {
+        log("Start UnFollow Chain");
+        s.unfollowChain(id);
+        log("End UnFollow Chain");
+        try {
+            Thread.sleep(5 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void update_account_seed(SessionManager s, byte[] seed) {
         log("Start Update Account Seed");
         s.updateAccountSeed(seed);
+    }
+
+    private static void submit_transaction(SessionManager s, Transaction tx) {
+        log("Start Submit Transaciton");
+        s.submitTransaction(tx);
+        log("End Submit Transaciton");
+        try {
+            Thread.sleep(5 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Account get_account_info(SessionManager s, byte[] id, String pubkey) {
+        log("Start Get Account Info");
+	    return s.getAccountInfo(id, pubkey);
     }
 
     private static boolean is_invalid(String s) {
