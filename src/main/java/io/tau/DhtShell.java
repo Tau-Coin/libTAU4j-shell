@@ -2,6 +2,7 @@ package io.tau;
 
 import org.libTAU4j.Account;
 import org.libTAU4j.AlertListener;
+import org.libTAU4j.Block;
 import org.libTAU4j.Ed25519;
 import org.libTAU4j.Entry;
 import org.libTAU4j.Hex;
@@ -159,6 +160,13 @@ public final class DhtShell {
 			Account act = get_account_info(s, chainID, friend);
         	log("Account balance: " + act.getBalance());
         	log("Account nonce: " + act.getNonce());
+
+			ArrayList<Block> blks = get_top_tip_block(s, chainID, 0);
+
+			long fee = 10;
+			fee = get_median_tx_fee(s, chainID);
+        	log("Chain fee: " + fee);
+
         }
     }
 
@@ -322,6 +330,16 @@ public final class DhtShell {
     private static Account get_account_info(SessionManager s, byte[] id, String pubkey) {
         log("Start Get Account Info");
 	    return s.getAccountInfo(id, pubkey);
+    }
+
+    private static ArrayList<Block> get_top_tip_block(SessionManager s, byte[] id, int num) {
+        log("Start Get Top And Tip Block");
+	    return s.getTopTipBlock(id, num);
+    }
+
+    private static long get_median_tx_fee(SessionManager s, byte[] id) {
+        log("Start Get Median Tx Fee");
+	    return s.getMedianTxFee(id);
     }
 
     private static boolean is_invalid(String s) {
